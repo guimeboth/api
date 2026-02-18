@@ -3,59 +3,66 @@ package br.com.gms.api.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 
-import br.com.gms.api.exception.TaskException;
+import br.com.gms.api.exception.TaskNotFoundException;
 import br.com.gms.api.model.Task;
-import br.com.gms.api.model.valueobject.TaskDTO;
+import br.com.gms.api.model.valueobject.CreateTaskDTO;
+import br.com.gms.api.model.valueobject.UpdateTaskDTO;
 
 public class TaskService {
 
     private List<Task> tasks = new ArrayList<>();
 
-    public Task createTask(TaskDTO payload) {
-        Task task = payload.toTask();
+    public Task create(CreateTaskDTO dto) {
+        Task task = dto.toTask();
         tasks.add(task);
 
         return task;
     }
 
-    public void changeDescription(Task task, String newDescription) {
-        task.changeDescription(newDescription);
+    public Task update(UpdateTaskDTO dto) {
+        Task task = findById(dto.id());
+
+        if (!Objects.equals(dto.description(), task.getDescription())) {
+            task.changeDescription(dto.description());
+        }
+
+        if (!Objects.equals(dto.scheduledDate(), task.getScheduledDate())) {
+            task.changeScheduledDate(dto.scheduledDate());
+        }
+
+        return task;
     }
 
-    public void changeScheduledDate(Task task, LocalDateTime newScheduledDate) {
-        task.changeScheduledDate(newScheduledDate);
+    public void concludeTask(UUID id) {
+        Task task = findById(id);
+        task.conclude();
     }
 
-    public void conclude(Task task) {
-        task.conclude(Boolean.TRUE);
-    }
-
-    public void reopen(Task task) {
-        task.reopen(Boolean.FALSE);
+    public void reopenTask(UUID id) {
+        Task task = findById(id);
+        task.reopen();
     }
 
     public List<Task> findAll() {
-        return tasks;
+        return List.copyOf(tasks);
     }
 
     public Task findById(UUID id) {
-        return tasks.stream().filter(t -> t.getId().equals(id)).findAny()
-                .orElseThrow(() -> new TaskException("Tarefa não encontrada"));
-    }
-
-    public Optional<Task> findByDescription(String description) {
-        return tasks.stream().filter(t -> t.getDescription().equalsIgnoreCase(description)).findFirst();
+        return tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElseThrow(TaskNotFoundException::new);
     }
 
     public List<Task> findByScheduledDate(LocalDateTime scheduledDate) {
-        return tasks.stream().filter(t -> t.getScheduledDate().equals(scheduledDate)).toList();
+        return tasks.stream().filter(
+                t -> Objects.equals(t.getScheduledDate(), scheduledDate))
+                .toList();
     }
 
     public void deleteById(UUID id) {
-        tasks.removeIf(t -> t.getId().equals(id));
+        Task task = findById(id);
+        tasks.remove(task);
     }
 
 }

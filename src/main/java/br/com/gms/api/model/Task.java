@@ -1,7 +1,6 @@
 package br.com.gms.api.model;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 import br.com.gms.api.exception.TaskException;
@@ -30,7 +29,10 @@ public class Task {
     }
 
     private String validateDescription(String description) {
-        return Objects.requireNonNull(description, "Descrição obrigatória");
+        if (description == null || description.isBlank()) {
+            throw new TaskException("Descrição obrigatória");
+        }
+        return description;
     }
 
     public UUID getId() {
@@ -61,26 +63,18 @@ public class Task {
         this.scheduledDate = validateScheduledDate(newScheduledDate);
     }
 
-    public void conclude(Boolean newCompleted) {
-        if (newCompleted == null) {
-            throw new TaskException("Erro ao concluir tarefa");
+    public void conclude() {
+        if (Boolean.TRUE.equals(this.completed)) {
+            throw new TaskException("Tarefa já concluída");
         }
-        if (this.completed == Boolean.TRUE) {
-            throw new TaskException("Tarefa já está concluída");
-        }
-
-        this.completed = newCompleted;
+        this.completed = Boolean.TRUE;
     }
 
-    public void reopen(Boolean newCompleted) {
-        if (newCompleted == null) {
-            throw new TaskException("Erro ao concluir tarefa");
+    public void reopen() {
+        if (Boolean.FALSE.equals(this.completed)) {
+            throw new TaskException("Tarefa já aberta");
         }
-        if (this.completed == Boolean.FALSE) {
-            throw new TaskException("Tarefa já está reaberta");
-        }
-
-        this.completed = newCompleted;
+        this.completed = Boolean.FALSE;
     }
 
     @Override

@@ -2,105 +2,50 @@ package br.com.gms.api.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import br.com.gms.api.model.Task;
-import br.com.gms.api.model.valueobject.TaskDTO;
+import br.com.gms.api.model.valueobject.CreateTaskDTO;
+import br.com.gms.api.model.valueobject.UpdateTaskDTO;
 import br.com.gms.api.service.TaskService;
 
 public class TaskController {
 
-    private TaskService service = new TaskService();
+    private final TaskService service;
 
-    public UUID createTask(TaskDTO payload) {
-        try {
-            return service.createTask(payload).getId();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public TaskController(TaskService service) {
+        this.service = service;
     }
 
-    public void changeDescription(Task task, String newDescription) {
-        try {
-            service.changeDescription(task, newDescription);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public UUID create(CreateTaskDTO payload) {
+        return service.create(payload).getId();
     }
 
-    public void changeScheduledDate(Task task, LocalDateTime scheduledDate) {
-        try {
-            service.changeScheduledDate(task, scheduledDate);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public void update(UpdateTaskDTO payload) {
+        service.update(payload);
     }
 
-    public void conclude(Task task) {
-        try {
-            service.conclude(task);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public void conclude(UUID id) {
+        service.concludeTask(id);
     }
 
-    public void reopen(Task task) {
-        try {
-            service.reopen(task);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public void reopen(UUID id) {
+        service.reopenTask(id);
     }
 
-    public List<Task> findAll() {
-        try {
-            return service.findAll();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public List<TaskResponseDTO> findAll() {
+        return service.findAll().stream().map(TaskResponseDTO::from).toList();
     }
 
-    public Task findById(UUID id) {
-        try {
-            return service.findById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public TaskResponseDTO findById(UUID id) {
+        return TaskResponseDTO.from(service.findById(id));
     }
 
-    public Optional<Task> findByDescription(String description) {
-        try {
-            return service.findByDescription(description);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-    public List<Task> findByScheduledDate(LocalDateTime scheduledDate) {
-        try {
-            return service.findByScheduledDate(scheduledDate);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public List<TaskResponseDTO> findByScheduledDate(LocalDateTime scheduledDate) {
+        return service.findByScheduledDate(scheduledDate).stream().map(TaskResponseDTO::from).toList();
     }
 
     public void deleteById(UUID id) {
-        try {
-            service.deleteById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        service.deleteById(id);
     }
 
 }
