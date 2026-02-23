@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.com.gms.api.exception.TaskException;
+import br.com.gms.api.exception.BusinessException;
 import br.com.gms.api.exception.TaskNotFoundException;
 import br.com.gms.api.model.Task;
 import br.com.gms.api.model.builder.TaskDTOTestBuilder;
@@ -58,9 +58,8 @@ class TaskServiceTest {
                 .withDescription("Nova descrição").withScheduledDate(created.getScheduledDate().plusDays(12))
                 .buildUpdateTask();
 
-        service.update(taskDTO);
+        service.update(created.getId(), taskDTO);
 
-        assertEquals(created.getId(), taskDTO.id());
         assertEquals(created.getDescription(), taskDTO.description());
         assertEquals(created.getScheduledDate(), taskDTO.scheduledDate());
     }
@@ -158,7 +157,7 @@ class TaskServiceTest {
         LocalDateTime pastDate = LocalDateTime.now().minusDays(1);
         CreateTaskDTO taskDTO = TaskDTOTestBuilder.aTask().withScheduledDate(pastDate).buildCreateTask();
 
-        TaskException exception = assertThrows(TaskException.class,
+        BusinessException exception = assertThrows(BusinessException.class,
                 () -> service.create(taskDTO));
 
         assertEquals("Data agendada deve ser maior que hoje", exception.getMessage());
@@ -168,7 +167,7 @@ class TaskServiceTest {
     void shouldNotCreateTaskWithEmptyDescription() {
         CreateTaskDTO taskDTO = TaskDTOTestBuilder.aTask().withDescription("").buildCreateTask();
 
-        TaskException exception = assertThrows(TaskException.class, () -> service.create(taskDTO));
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.create(taskDTO));
 
         assertEquals("Descrição obrigatória", exception.getMessage());
     }
@@ -178,7 +177,8 @@ class TaskServiceTest {
         Task created = service.create(TaskDTOTestBuilder.aTask().buildCreateTask());
         created.conclude();
 
-        TaskException exception = assertThrowsExactly(TaskException.class, () -> service.concludeTask(created.getId()));
+        BusinessException exception = assertThrowsExactly(BusinessException.class,
+                () -> service.concludeTask(created.getId()));
 
         assertEquals("Tarefa já concluída", exception.getMessage());
     }
@@ -187,7 +187,8 @@ class TaskServiceTest {
     void shouldCompleteTaskAlreadyReopen() {
         Task created = service.create(TaskDTOTestBuilder.aTask().buildCreateTask());
 
-        TaskException exception = assertThrowsExactly(TaskException.class, () -> service.reopenTask(created.getId()));
+        BusinessException exception = assertThrowsExactly(BusinessException.class,
+                () -> service.reopenTask(created.getId()));
 
         assertEquals("Tarefa já aberta", exception.getMessage());
     }
@@ -199,7 +200,7 @@ class TaskServiceTest {
 
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class, () -> service.findById(randomUUID));
 
-        assertEquals("Tarefa não encontrada", exception.getMessage());
+        assertEquals("Tarefa não encontrada. Id: " + randomUUID, exception.getMessage());
     }
 
     @Test
@@ -207,10 +208,12 @@ class TaskServiceTest {
         TaskTestFixture.createTasks(service, 3);
         UpdateTaskDTO updatedTask = TaskDTOTestBuilder.aTask().withDescription("Task que não está na lista")
                 .buildUpdateTask();
+        UUID randomUUID = UUID.randomUUID();
 
-        TaskNotFoundException exception = assertThrows(TaskNotFoundException.class, () -> service.update(updatedTask));
+        TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
+                () -> service.update(randomUUID, updatedTask));
 
-        assertEquals("Tarefa não encontrada", exception.getMessage());
+        assertEquals("Tarefa não encontrada. Id: " + randomUUID, exception.getMessage());
     }
 
     @Test
@@ -221,7 +224,7 @@ class TaskServiceTest {
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
                 () -> service.concludeTask(randomUUID));
 
-        assertEquals("Tarefa não encontrada", exception.getMessage());
+        assertEquals("Tarefa não encontrada. Id: " + randomUUID, exception.getMessage());
     }
 
     @Test
@@ -232,7 +235,7 @@ class TaskServiceTest {
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
                 () -> service.reopenTask(randomUUID));
 
-        assertEquals("Tarefa não encontrada", exception.getMessage());
+        assertEquals("Tarefa não encontrada. Id: " + randomUUID, exception.getMessage());
     }
 
     @Test
@@ -243,7 +246,7 @@ class TaskServiceTest {
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
                 () -> service.deleteById(randomUUID));
 
-        assertEquals("Tarefa não encontrada", exception.getMessage());
+        assertEquals("Tarefa não encontrada. Id: " + randomUUID, exception.getMessage());
     }
 
 }

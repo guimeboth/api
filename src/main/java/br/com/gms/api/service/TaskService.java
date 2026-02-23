@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import br.com.gms.api.exception.TaskNotFoundException;
 import br.com.gms.api.model.Task;
 import br.com.gms.api.model.valueobject.CreateTaskDTO;
 import br.com.gms.api.model.valueobject.UpdateTaskDTO;
 
+@Service
 public class TaskService {
 
     private List<Task> tasks = new ArrayList<>();
@@ -22,10 +25,10 @@ public class TaskService {
         return task;
     }
 
-    public Task update(UpdateTaskDTO dto) {
-        Task task = findById(dto.id());
+    public Task update(UUID id, UpdateTaskDTO dto) {
+        Task task = findById(id);
 
-        if (!Objects.equals(dto.description(), task.getDescription())) {
+        if (Objects.nonNull(dto.description()) && !Objects.equals(dto.description(), task.getDescription())) {
             task.changeDescription(dto.description());
         }
 
@@ -51,7 +54,8 @@ public class TaskService {
     }
 
     public Task findById(UUID id) {
-        return tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElseThrow(TaskNotFoundException::new);
+        return tasks.stream().filter(t -> t.getId().equals(id)).findFirst()
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     public List<Task> findByScheduledDate(LocalDateTime scheduledDate) {

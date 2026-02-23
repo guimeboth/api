@@ -3,7 +3,7 @@ package br.com.gms.api.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import br.com.gms.api.exception.TaskException;
+import br.com.gms.api.exception.BusinessException;
 
 public class Task {
 
@@ -23,14 +23,14 @@ public class Task {
 
     private LocalDateTime validateScheduledDate(LocalDateTime scheduledDate) {
         if (scheduledDate != null && scheduledDate.isBefore(LocalDateTime.now())) {
-            throw new TaskException("Data agendada deve ser maior que hoje");
+            throw new BusinessException("Data agendada deve ser maior que hoje");
         }
         return scheduledDate;
     }
 
     private String validateDescription(String description) {
         if (description == null || description.isBlank()) {
-            throw new TaskException("Descrição obrigatória");
+            throw new BusinessException("Descrição obrigatória");
         }
         return description;
     }
@@ -65,14 +65,14 @@ public class Task {
 
     public void conclude() {
         if (Boolean.TRUE.equals(this.completed)) {
-            throw new TaskException("Tarefa já concluída");
+            throw new BusinessException("Tarefa já concluída");
         }
         this.completed = Boolean.TRUE;
     }
 
     public void reopen() {
         if (Boolean.FALSE.equals(this.completed)) {
-            throw new TaskException("Tarefa já aberta");
+            throw new BusinessException("Tarefa já aberta");
         }
         this.completed = Boolean.FALSE;
     }

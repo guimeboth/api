@@ -50,7 +50,7 @@ public class TaskDTOTestBuilder {
     }
 
     public UpdateTaskDTO buildUpdateTask() {
-        return new UpdateTaskDTO(id, description, scheduledDate);
+        return new UpdateTaskDTO(description, scheduledDate);
     }
 
     public TaskResponseDTO buildResponseTask() {

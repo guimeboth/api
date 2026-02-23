@@ -1,9 +1,11 @@
 package br.com.gms.api.exception;
 
-public class TaskNotFoundException extends RuntimeException {
+import java.util.UUID;
 
-    public TaskNotFoundException() {
-        super("Tarefa não encontrada");
+public class TaskNotFoundException extends NotFoundException {
+
+    public TaskNotFoundException(UUID id) {
+        super("Tarefa não encontrada. Id: " + id);
     }
 
 }
